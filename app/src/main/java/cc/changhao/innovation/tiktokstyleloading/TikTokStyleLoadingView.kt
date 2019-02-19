@@ -97,11 +97,11 @@ class TikTokStyleLoadingView @JvmOverloads constructor(context: Context,
     }
 
     private fun animateArch() {
-        val frontEndExtend = ValueAnimator.ofFloat(0f, 360f)
-        frontEndExtend.duration = ANIMATION_DURATION
-        frontEndExtend.repeatCount = ValueAnimator.INFINITE
-        frontEndExtend.interpolator = LinearInterpolator()
-        frontEndExtend.addUpdateListener { animation ->
+        val circleAnimator = ValueAnimator.ofFloat(0f, 360f)
+        circleAnimator.duration = ANIMATION_DURATION
+        circleAnimator.repeatCount = ValueAnimator.INFINITE
+        circleAnimator.interpolator = LinearInterpolator()
+        circleAnimator.addUpdateListener { animation ->
             val newValue = animation.animatedValue as Float
 
             mRadiusA = (Math.sin(Math.toRadians(newValue.toDouble())).toFloat() + CIRCLE_WEIGHT_ADJUST) / (CIRCLE_WEIGHT_ADJUST + 1)  * CIRCLE_RADIUS
@@ -109,6 +109,6 @@ class TikTokStyleLoadingView @JvmOverloads constructor(context: Context,
             mAnimatedValue = (animation.animatedValue as Float)
             invalidate()
         }
-        frontEndExtend.start()
+        circleAnimator.start()
     }
 }
