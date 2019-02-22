@@ -3,4 +3,12 @@
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
+    <color name="modelPink">#F4318A</color>
+    <color name="modelPink2">#FBE2F0</color>
+    <color name="red_200">#EF9A9A</color>
+    <color name="pink_200">#FFBE08</color>
+
+
+    <color name="loading_orange">#FFBE08</color>
+    <color name="loading_pink">#F45EA6</color>
 </resources>

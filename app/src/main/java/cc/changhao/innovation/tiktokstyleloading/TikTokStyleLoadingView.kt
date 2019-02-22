@@ -6,11 +6,16 @@ import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
 import android.animation.ValueAnimator
+import android.util.Log
+import android.view.animation.BounceInterpolator
+import android.view.animation.DecelerateInterpolator
 import android.view.animation.LinearInterpolator
+import android.view.animation.OvershootInterpolator
+import java.util.logging.Logger
 
 
 /**
- * TikTok风格的加载动画
+ * TikTok風のLoadingView
  *
  * @author cui changhao
  */
@@ -29,33 +34,42 @@ class TikTokStyleLoadingView @JvmOverloads constructor(context: Context,
     private var mRadiusA = CIRCLE_RADIUS
     private var mRadiusB = CIRCLE_RADIUS
 
+    private var mPositionOffSet = MOVE_DISTANCE/2
+    private var mAdjust = CIRCLE_RADIUS / (CIRCLE_WEIGHT_ADJUST + 1)
+    private var mCircleWeightAdjust = CIRCLE_WEIGHT_ADJUST * mAdjust
+
     companion object {
         /**
-         * 圆的大小
+         * 円の大きさ
          */
-        const val CIRCLE_RADIUS = 20f
+        const val CIRCLE_RADIUS = 22f
 
         /**
-         * 设置比1大的数
-         * 越小的数圆的大小变换越大
-         * 越大的数圆的大小变化越小
+         * 1より大きい数字を設定
+         * 小さいほど円の大きさ変化が激しい
+         * 多きいほど円の変化が小さい
          */
         const val CIRCLE_WEIGHT_ADJUST = 5f
 
         /**
-         * 动画间隔，越小越快
+         * animation間隔、小さいほど早い
          */
         const val ANIMATION_DURATION = 1000L
 
         /**
-         * 圆的移动幅度
+         * 円の移動幅
          */
-        const val MOVE_DISTANCE = 40f
+        const val MOVE_DISTANCE = 36f
 
         /**
-         * 圆的轨迹
+         * 円の軌跡
          */
         const val MOVE_DISTANCE_DEGREE = 180f
+
+        /**
+         * 90のradians = Π/2
+         */
+        const val RADIANS_90 = 1.5707963267948966
     }
 
     init {
@@ -78,10 +92,9 @@ class TikTokStyleLoadingView @JvmOverloads constructor(context: Context,
             MOVE_DISTANCE_DEGREE - mAnimatedValue % MOVE_DISTANCE_DEGREE
         }
 
-        mMovePositionA = mPerDegreeDistance * mMoveDegree + MOVE_DISTANCE/2
-        mMovePositionB = MOVE_DISTANCE - mPerDegreeDistance * mMoveDegree + MOVE_DISTANCE/2
+        mMovePositionA = mPositionOffSet + mPerDegreeDistance * mMoveDegree
+        mMovePositionB = mPositionOffSet + MOVE_DISTANCE - mPerDegreeDistance * mMoveDegree
 
-        // 两个圆的转动带来的类似3D效果的前后切换
         if(mIsOddRotation) {
             canvas.drawCircle(mMovePositionA, CIRCLE_RADIUS, mRadiusA, mPaintRed)
             canvas.drawCircle(mMovePositionB, CIRCLE_RADIUS, mRadiusB, mPaintBlue)
@@ -104,9 +117,19 @@ class TikTokStyleLoadingView @JvmOverloads constructor(context: Context,
         circleAnimator.addUpdateListener { animation ->
             val newValue = animation.animatedValue as Float
 
-            mRadiusA = (Math.sin(Math.toRadians(newValue.toDouble())).toFloat() + CIRCLE_WEIGHT_ADJUST) / (CIRCLE_WEIGHT_ADJUST + 1)  * CIRCLE_RADIUS
-            mRadiusB = (Math.cos(Math.toRadians(newValue.toDouble() + 90)).toFloat() + CIRCLE_WEIGHT_ADJUST) / (CIRCLE_WEIGHT_ADJUST + 1)  * CIRCLE_RADIUS
+            val radians = Math.toRadians(newValue.toDouble())
+
+            mRadiusA = Math.sin(radians).toFloat() * mAdjust + mCircleWeightAdjust
+            mRadiusB = Math.cos(radians + RADIANS_90).toFloat() * mAdjust + mCircleWeightAdjust
             mAnimatedValue = (animation.animatedValue as Float)
+
+
+            // 境界線では値が激しく変化し描画がちらつくので0と360、且つonDraw内部の%計算結果を考慮し180も無視
+            if( mAnimatedValue == 0f
+                || mAnimatedValue == 180f
+                || mAnimatedValue == 360f
+            ) return@addUpdateListener
+
             invalidate()
         }
         circleAnimator.start()
